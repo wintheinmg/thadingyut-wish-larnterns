@@ -521,19 +521,19 @@
 
   /* ---------- Background music ---------- */
   (function music() {
-    var btn = $('musicBtn');
+    var btn = $('musicBtn'), hint = $('musicHint');
     var audio = new Audio();
-    audio.src = 'thadingyut-song.mp3';
+    audio.src = 'thadingyut-song-v2.mp3';
     audio.loop = true;
-    audio.preload = 'none';
+    audio.preload = 'auto';
     audio.volume = 0;
-    var TARGET = 0.45, fadeTimer = null, wasPlaying = false;
-    var pref = null;
-    try { pref = localStorage.getItem('lantern-music'); } catch (e) { /* ignore */ }
-    function savePref(v) { pref = v; try { localStorage.setItem('lantern-music', v); } catch (e) { /* ignore */ } }
-    function ui(on) {
-      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-      btn.setAttribute('aria-label', on ? 'Turn music off' : 'Play music');
+    var TARGET = 0.45, fadeTimer = null, wantOn = true, wasPlaying = false;
+
+    function ui() {
+      var playing = !audio.paused;
+      btn.setAttribute('aria-pressed', wantOn ? 'true' : 'false');
+      btn.setAttribute('aria-label', wantOn ? 'Turn music off' : 'Play music');
+      hint.hidden = !(wantOn && !playing);
     }
     function fadeTo(v, done) {
       clearInterval(fadeTimer);
@@ -545,28 +545,42 @@
     }
     function play() {
       var p = audio.play();
-      ui(true);
-      fadeTo(TARGET);
-      if (p && p.catch) p.catch(function () { ui(false); });
+      if (p && p.then) p.then(function () { fadeTo(TARGET); ui(); }, function () { ui(); });
+      else { fadeTo(TARGET); ui(); }
     }
-    function stop() { ui(false); fadeTo(0, function () { audio.pause(); }); }
+    function stop() { fadeTo(0, function () { audio.pause(); ui(); }); }
+
+    audio.addEventListener('playing', ui);
+    audio.addEventListener('pause', ui);
+
     btn.addEventListener('click', function () {
-      if (audio.paused || btn.getAttribute('aria-pressed') !== 'true') { savePref('on'); play(); }
-      else { savePref('off'); stop(); }
+      if (wantOn && !audio.paused) { wantOn = false; stop(); }
+      else { wantOn = true; play(); }
+      ui();
     });
-    // Browsers only allow sound after the visitor interacts, so start on the first tap or click.
-    function firstInteraction(e) {
-      document.removeEventListener('pointerdown', firstInteraction, true);
-      document.removeEventListener('keydown', firstInteraction, true);
+
+    // Music is on by default. Try to start right away; if the browser blocks sound
+    // until the visitor interacts, start on the first tap, click or key press.
+    function onInteract(e) {
       if (e.target && e.target.closest && e.target.closest('#musicBtn')) return;
-      if (pref !== 'off' && audio.paused) play();
+      if (wantOn && audio.paused) play();
+      if (!audio.paused) {
+        document.removeEventListener('pointerdown', onInteract, true);
+        document.removeEventListener('keydown', onInteract, true);
+        document.removeEventListener('touchstart', onInteract, true);
+      }
     }
-    document.addEventListener('pointerdown', firstInteraction, true);
-    document.addEventListener('keydown', firstInteraction, true);
+    document.addEventListener('pointerdown', onInteract, true);
+    document.addEventListener('keydown', onInteract, true);
+    document.addEventListener('touchstart', onInteract, true);
+
     document.addEventListener('visibilitychange', function () {
       if (document.hidden) { wasPlaying = !audio.paused; if (wasPlaying) audio.pause(); }
-      else if (wasPlaying) { audio.play().catch(function () { ui(false); }); }
+      else if (wasPlaying && wantOn) play();
     });
+
+    ui();
+    play();
   })();
   poll();
 })();
