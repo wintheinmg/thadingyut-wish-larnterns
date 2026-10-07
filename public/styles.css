@@ -178,3 +178,17 @@ fieldset legend{padding:0;margin-bottom:10px}
 input[type=password]{box-sizing:border-box;width:100%;height:48px;padding:0 16px;border-radius:14px;border:1px solid var(--line);background:var(--field);color:var(--moon);font-size:16px}
 input[type=password]:focus{outline:none;border-color:var(--gold)}
 .admin-badge{position:fixed;left:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:20;padding:8px 14px;border-radius:999px;background:rgba(255,154,162,.15);border:1px solid rgba(255,154,162,.5);color:var(--error);font-size:13px}
+
+/* Click-through: big text boxes must not block lanterns behind them */
+.hero,.top,.foot,.status{pointer-events:none}
+.hero button,.hero a,.top button,.top img{pointer-events:auto}
+.lanterns{z-index:5}
+.hero{z-index:4}
+/* Music toggle */
+.top-actions{display:flex;align-items:center;gap:10px}
+.music{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:var(--text)}
+.music:hover{background:rgba(255,255,255,.1)}
+.music[aria-pressed=true]{color:var(--gold-hi);border-color:rgba(246,195,91,.5)}
+.music .on,.music[aria-pressed=true] .off{display:none}
+.music[aria-pressed=true] .on{display:block}

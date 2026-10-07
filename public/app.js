@@ -518,5 +518,55 @@
       .then(function () { pollTimer = setTimeout(poll, POLL_MS); });
   }
   document.addEventListener('visibilitychange', function () { if (!document.hidden) poll(); });
+
+  /* ---------- Background music ---------- */
+  (function music() {
+    var btn = $('musicBtn');
+    var audio = new Audio();
+    audio.src = 'thadingyut-song.mp3';
+    audio.loop = true;
+    audio.preload = 'none';
+    audio.volume = 0;
+    var TARGET = 0.45, fadeTimer = null, wasPlaying = false;
+    var pref = null;
+    try { pref = localStorage.getItem('lantern-music'); } catch (e) { /* ignore */ }
+    function savePref(v) { pref = v; try { localStorage.setItem('lantern-music', v); } catch (e) { /* ignore */ } }
+    function ui(on) {
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      btn.setAttribute('aria-label', on ? 'Turn music off' : 'Play music');
+    }
+    function fadeTo(v, done) {
+      clearInterval(fadeTimer);
+      fadeTimer = setInterval(function () {
+        var d = v - audio.volume;
+        if (Math.abs(d) < 0.03) { audio.volume = v; clearInterval(fadeTimer); if (done) done(); return; }
+        audio.volume = Math.min(1, Math.max(0, audio.volume + (d > 0 ? 0.03 : -0.03)));
+      }, 60);
+    }
+    function play() {
+      var p = audio.play();
+      ui(true);
+      fadeTo(TARGET);
+      if (p && p.catch) p.catch(function () { ui(false); });
+    }
+    function stop() { ui(false); fadeTo(0, function () { audio.pause(); }); }
+    btn.addEventListener('click', function () {
+      if (audio.paused || btn.getAttribute('aria-pressed') !== 'true') { savePref('on'); play(); }
+      else { savePref('off'); stop(); }
+    });
+    // Browsers only allow sound after the visitor interacts, so start on the first tap or click.
+    function firstInteraction(e) {
+      document.removeEventListener('pointerdown', firstInteraction, true);
+      document.removeEventListener('keydown', firstInteraction, true);
+      if (e.target && e.target.closest && e.target.closest('#musicBtn')) return;
+      if (pref !== 'off' && audio.paused) play();
+    }
+    document.addEventListener('pointerdown', firstInteraction, true);
+    document.addEventListener('keydown', firstInteraction, true);
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) { wasPlaying = !audio.paused; if (wasPlaying) audio.pause(); }
+      else if (wasPlaying) { audio.play().catch(function () { ui(false); }); }
+    });
+  })();
   poll();
 })();
