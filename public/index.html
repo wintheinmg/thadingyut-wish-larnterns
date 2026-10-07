@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Thadingyut Wish Lanterns</title>
+<meta name="description" content="Send a Thadingyut wish on a glowing lantern into the festival sky. From Fluxion Technology and Zeno Property.">
+<meta name="theme-color" content="#060A22">
+<meta property="og:title" content="Happy Thadingyut · Wish Lanterns">
+<meta property="og:description" content="Light a lantern, make a wish, and send it up into the festival sky.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 84'%3E%3Cpath d='M8 6 Q30 -2 52 6 L45 64 Q30 70 15 64 Z' fill='%23F6B73C'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=DM+Sans:wght@400;500;700&family=Padauk:wght@400;700&display=swap">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div class="scene" id="scene">
+  <canvas id="sky" aria-hidden="true"></canvas>
+  <div class="moon" aria-hidden="true"></div>
+  <div class="horizon-glow" aria-hidden="true"></div>
+  <svg class="skyline" viewBox="0 0 1440 320" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+    <path id="farSkyline" fill="#1C1F52" opacity="0.9"/>
+    <path id="nearSkyline" fill="#05061A"/>
+  </svg>
+  <div class="candles" id="candles" aria-hidden="true"></div>
+
+  <header class="top">
+    <div class="logos">
+      <img src="fluxion-logo.png" alt="Fluxion Technology">
+      <span class="x" aria-hidden="true">×</span>
+      <img src="zeno-logo.png" alt="Zeno Property">
+    </div>
+    <button class="count" id="countBtn" type="button" aria-haspopup="dialog">
+      <svg width="12" height="16" viewBox="0 0 60 84" aria-hidden="true"><path d="M8 6 Q30 -2 52 6 L45 64 Q30 70 15 64 Z" fill="#F6B73C"/></svg>
+      <span><strong id="count">0</strong> <span class="lbl-long">wishes in the sky</span><span class="lbl-short"> · See all</span></span>
+    </button>
+  </header>
+
+  <div class="lanterns" id="lanterns"></div>
+
+  <main class="hero" id="hero">
+    <div class="eyebrow">Fluxion Technology &amp; Zeno Property present</div>
+    <h1>Happy Thadingyut</h1>
+    <div class="mm-title" lang="my">ပျော်ရွှင်ဖွယ် သီတင်းကျွတ်ပွဲတော်</div>
+    <p class="lede">Light a lantern, make a wish, and send it up into the festival sky.</p>
+    <p class="lede-mm" lang="my">မီးပုံးလေးတစ်လုံးနဲ့ ဆုတောင်းလေးကို ကောင်းကင်ဆီ ပို့လိုက်ပါ</p>
+    <div class="cta-wrap" id="ctaWrap">
+      <button class="cta" id="openWish" type="button" aria-haspopup="dialog">
+        <svg width="22" height="30" viewBox="0 0 60 84" aria-hidden="true"><path d="M8 6 Q30 -2 52 6 L45 64 Q30 70 15 64 Z" fill="#1A1030"/><path d="M30 71 Q26 77 30 83 Q34 77 30 71 Z" fill="#1A1030"/></svg>
+        <span class="labels"><span class="en">Release a wish lantern</span><span class="my" lang="my">ဆုတောင်း မီးပုံးလွှတ်မယ်</span></span>
+      </button>
+      <div class="hint" id="hint">Tap any lantern to read its wish</div>
+    </div>
+    <div class="status" id="status" role="status"></div>
+  </main>
+
+  <footer class="foot">Happy Thadingyut from Fluxion Technology and Zeno Property · Bangkok · Yangon</footer>
+</div>
+
+<div id="toastHost" aria-live="polite"></div>
+
+<dialog id="wishDialog" aria-labelledby="wish-title">
+  <form class="sheet" id="wishForm" novalidate>
+    <div class="preview">
+      <div class="bob" id="previewLantern"></div>
+      <div class="cap">Your lantern<div class="nm" id="previewName">Golden</div></div>
+    </div>
+    <div class="fields">
+      <button class="close" type="button" data-close aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <div>
+        <h2 id="wish-title">Make a wish</h2>
+        <div class="sub" lang="my">ဆုတောင်းလေး ရေးပါ</div>
+      </div>
+      <div class="field">
+        <label for="wishText">Your wish <span class="req">*</span> <span class="opt">(required)</span></label>
+        <textarea id="wishText" rows="4" maxlength="150" aria-required="true" aria-describedby="wishErr wishCount" placeholder="Write your Thadingyut wish..."></textarea>
+        <div class="meta-row"><span class="err" id="wishErr"></span><span class="counter" id="wishCount">0/150</span></div>
+      </div>
+      <div class="field">
+        <label for="senderName">Your name <span class="opt">(optional)</span></label>
+        <input type="text" id="senderName" maxlength="40" autocomplete="name" placeholder="Leave blank to send anonymously">
+      </div>
+      <fieldset class="field">
+        <legend>Lantern color</legend>
+        <div class="swatches" id="swatches"></div>
+      </fieldset>
+      <div class="form-err" id="formErr" role="alert"></div>
+      <div class="actions">
+        <button class="btn ghost" type="button" data-close>Cancel</button>
+        <button class="btn primary" type="submit" id="releaseBtn">Release lantern</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="readDialog" aria-labelledby="read-from">
+  <div class="sheet">
+    <button class="close" type="button" data-close aria-label="Close wish">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <div class="lan" id="readLantern"></div>
+    <div class="from" id="read-from"></div>
+    <p class="wish-text" id="readText"></p>
+    <div class="when" id="readWhen"></div>
+    <div class="mod" id="modArea" hidden>
+      <button class="btn danger" type="button" id="removeBtn">Remove wish</button>
+    </div>
+    <div class="mod" id="confirmArea" hidden>
+      <p>Remove this wish for everyone?</p>
+      <button class="btn ghost" type="button" id="cancelRemove">Keep it</button>
+      <button class="btn danger" type="button" id="confirmRemove">Remove</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="listDialog" aria-labelledby="list-title">
+  <div class="sheet">
+    <button class="close" type="button" data-close aria-label="Close list">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <header>
+      <h2 id="list-title">All wishes</h2>
+      <div class="sub" id="listSub"></div>
+    </header>
+    <ul class="wish-list" id="wishList"></ul>
+    <div class="empty" id="listEmpty" hidden>No lanterns yet. Be the first to light up the sky.</div>
+  </div>
+</dialog>
+
+<dialog id="adminDialog" aria-labelledby="admin-title">
+  <form class="sheet" id="adminForm" novalidate>
+    <button class="close" type="button" data-close aria-label="Close">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <h2 id="admin-title">Moderator sign-in</h2>
+    <p class="admin-note">Enter the moderator key to remove wishes. The key is kept only in this browser tab.</p>
+    <div class="field">
+      <label for="adminKey">Moderator key</label>
+      <input type="password" id="adminKey" autocomplete="off">
+    </div>
+    <div class="form-err" id="adminErr" role="alert"></div>
+    <div class="actions">
+      <button class="btn ghost" type="button" id="adminOff">Sign out</button>
+      <button class="btn primary" type="submit">Turn on moderation</button>
+    </div>
+  </form>
+</dialog>
+<div class="admin-badge" id="adminBadge" hidden>Moderation on</div>
+
+<script src="/app.js" defer></script>
+</body>
+</html>
